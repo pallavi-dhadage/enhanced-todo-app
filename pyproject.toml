@@ -1,0 +1,22 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --strict-markers"
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*", "*/venv/*", "*/migrations/*", "*__pycache__*", "src/api/routes.py", "src/app.py", "src/celery_app.py", "src/models/database.py", "src/services/*", "src/utils/*"]
+
+[tool.coverage.report]
+fail_under = 27
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "except ImportError:",
+    "pass",
+    "def __repr__",
+]
