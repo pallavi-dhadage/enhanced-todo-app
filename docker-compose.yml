@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   web:
     build: ./flask-app
@@ -10,7 +8,6 @@ services:
       - todo-data:/app/data
     environment:
       - FLASK_ENV=development
-      - FLASK_APP=app.py
     restart: unless-stopped
 
 volumes:
