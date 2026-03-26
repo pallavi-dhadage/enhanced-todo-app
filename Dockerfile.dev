@@ -1,0 +1,21 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY configs/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY src/ ./src/
+COPY tests/ ./tests/
+
+# Install development dependencies
+RUN pip install pytest pytest-cov black flake8 mypy
+
+EXPOSE 5000 5001
+
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000", "--debug"]
