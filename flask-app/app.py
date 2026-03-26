@@ -31,6 +31,12 @@ def init_db():
         ''')
         conn.commit()
 
+@app.context_processor
+def utility_processor():
+    def now():
+        return datetime.now().strftime('%Y-%m-%d')
+    return dict(now=now)
+
 @app.route('/')
 def index():
     """Home page - show all todos with filters"""
@@ -140,7 +146,7 @@ def edit_todo(todo_id):
 def api_get_todos():
     """Get all todos as JSON"""
     with get_db() as conn:
-        todos = conn.execute('SELECT * FROM todos').fetchall()
+        todos = conn.execute('SELECT * FROM todos ORDER BY created_at DESC').fetchall()
     return jsonify([dict(todo) for todo in todos])
 
 @app.route('/api/todos', methods=['POST'])
@@ -150,16 +156,40 @@ def api_add_todo():
     title = data.get('title')
     if title:
         with get_db() as conn:
-            conn.execute('''
+            cur = conn.execute('''
                 INSERT INTO todos (title, description, priority, category, due_date)
                 VALUES (?, ?, ?, ?, ?)
+                RETURNING id
             ''', (title, data.get('description', ''), 
                   data.get('priority', 'medium'), 
                   data.get('category', 'General'),
                   data.get('due_date', None)))
+            todo_id = cur.lastrowid
             conn.commit()
-        return jsonify({'success': True}), 201
+        return jsonify({'success': True, 'id': todo_id}), 201
     return jsonify({'error': 'Title required'}), 400
+
+@app.route('/api/stats', methods=['GET'])
+def api_get_stats():
+    """Get todo statistics"""
+    with get_db() as conn:
+        stats = conn.execute('''
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN completed = 0 THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN priority = 'high' AND completed = 0 THEN 1 ELSE 0 END) as high_priority_pending,
+                COUNT(DISTINCT category) as categories
+            FROM todos
+        ''').fetchone()
+    
+    return jsonify({
+        'total': stats['total'],
+        'pending': stats['pending'],
+        'completed': stats['completed'],
+        'high_priority_pending': stats['high_priority_pending'],
+        'categories': stats['categories']
+    })
 
 if __name__ == '__main__':
     init_db()
