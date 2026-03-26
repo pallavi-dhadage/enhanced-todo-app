@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Task</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>✎ Edit Task</h1>
+        
+        <form action="/edit/{{ todo.id }}" method="POST" class="todo-form">
+            <div class="form-group">
+                <label>Task Title:</label>
+                <input type="text" name="title" value="{{ todo.title }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Description:</label>
+                <textarea name="description" rows="3">{{ todo.description or '' }}</textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Priority:</label>
+                    <select name="priority">
+                        <option value="high" {% if todo.priority == 'high' %}selected{% endif %}>High</option>
+                        <option value="medium" {% if todo.priority == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="low" {% if todo.priority == 'low' %}selected{% endif %}>Low</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Category:</label>
+                    <input type="text" name="category" value="{{ todo.category }}">
+                </div>
+                
+                <div class="form-group">
+                    <label>Due Date:</label>
+                    <input type="date" name="due_date" value="{{ todo.due_date }}">
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit">Save Changes</button>
+                <a href="/" class="cancel-btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

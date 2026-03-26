@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./flask-app
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./flask-app:/app
+      - todo-data:/app/data
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=app.py
+    restart: unless-stopped
+
+volumes:
+  todo-data:

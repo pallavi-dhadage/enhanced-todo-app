@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Todo App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Enhanced Todo Manager</h1>
+        
+        <!-- Add Todo Form -->
+        <div class="form-container">
+            <h2>Add New Task</h2>
+            <form action="/add" method="POST" class="todo-form">
+                <div class="form-group">
+                    <input type="text" name="title" placeholder="Task title..." required>
+                </div>
+                <div class="form-group">
+                    <textarea name="description" placeholder="Description (optional)" rows="2"></textarea>
+                </div>
+                <div class="form-row">
+                    <select name="priority">
+                        <option value="high">🔴 High Priority</option>
+                        <option value="medium" selected>🟡 Medium Priority</option>
+                        <option value="low">🟢 Low Priority</option>
+                    </select>
+                    <input type="text" name="category" placeholder="Category (e.g., Work, Personal)">
+                    <input type="date" name="due_date">
+                </div>
+                <button type="submit">Add Task</button>
+            </form>
+        </div>
+        
+        <!-- Filters and Search -->
+        <div class="filters">
+            <h2>Filter Tasks</h2>
+            <form method="GET" class="filter-form">
+                <div class="filter-row">
+                    <select name="priority">
+                        <option value="all" {% if priority_filter == 'all' %}selected{% endif %}>All Priorities</option>
+                        <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+                        <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+                    </select>
+                    
+                    <select name="category">
+                        <option value="all" {% if category_filter == 'all' %}selected{% endif %}>All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <select name="status">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Tasks</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                    
+                    <input type="text" name="search" placeholder="Search tasks..." value="{{ search_query }}">
+                    <button type="submit">Apply Filters</button>
+                    <a href="/" class="clear-btn">Clear All</a>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Tasks Display -->
+        <div class="todo-container">
+            {% if todos %}
+                {% for todo in todos %}
+                <div class="todo-card priority-{{ todo.priority }}">
+                    <div class="todo-header">
+                        <div class="todo-title {% if todo.completed %}completed{% endif %}">
+                            <strong>{{ todo.title }}</strong>
+                            <span class="priority-badge priority-{{ todo.priority }}">
+                                {% if todo.priority == 'high' %}🔴 High
+                                {% elif todo.priority == 'medium' %}🟡 Medium
+                                {% else %}🟢 Low{% endif %}
+                            </span>
+                            <span class="category-badge">{{ todo.category }}</span>
+                        </div>
+                        <div class="todo-actions">
+                            {% if not todo.completed %}
+                            <a href="/complete/{{ todo.id }}" class="complete-btn">✓ Complete</a>
+                            <a href="/edit/{{ todo.id }}" class="edit-btn">✎ Edit</a>
+                            {% endif %}
+                            <a href="/delete/{{ todo.id }}" class="delete-btn" onclick="return confirm('Delete this task?')">✗ Delete</a>
+                        </div>
+                    </div>
+                    
+                    {% if todo.description %}
+                    <div class="todo-description">{{ todo.description }}</div>
+                    {% endif %}
+                    
+                    <div class="todo-footer">
+                        {% if todo.due_date %}
+                        <span class="due-date">
+                            📅 Due: {{ todo.due_date }}
+                            {% set today = now() if now else None %}
+                        </span>
+                        {% endif %}
+                        <span class="created-date">🕒 Created: {{ todo.created_at[:10] }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No tasks found!</p>
+                    <p>Add your first task above ✨</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
+        // Auto-hide flash messages
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.flash-message');
+            messages.forEach(msg => msg.style.display = 'none');
+        }, 3000);
+    </script>
+</body>
+</html>
